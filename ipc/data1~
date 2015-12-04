@@ -1,0 +1,56 @@
+root@louxj:/home/louxj# cd resposity/
+root@louxj:/home/louxj/resposity# ls
+root@louxj:/home/louxj/resposity# ssh-keygen -t rsa -C "279797073@qq.com"
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa): 
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+5f:d0:f3:fd:d8:3f:74:e0:67:90:d9:8a:d4:15:49:cf 279797073@qq.com
+The key's randomart image is:
++--[ RSA 2048]----+
+|              .oo|
+|           .   oo|
+|          . o. =E|
+|           ..o*..|
+|        S  ..o.+.|
+|         . .. o+=|
+|          .   oo+|
+|               ..|
+|                o|
++-----------------+
+root@louxj:/home/louxj# cd ~/.ssh
+root@louxj:~/.ssh# ls
+id_rsa  id_rsa.pub
+root@louxj:~/.ssh# ls
+id_rsa  id_rsa.pub
+root@louxj:~/.ssh# cat id_rsa.pub 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8YHcTZghWfV9UPoqyZej/Su5aYcnRRYR5oYP7D64iGqOQuqi3/uLwm+B6L0hEYwHWXbvAUFiGfMndd2VXt+QgddFttzQQAMoVAqSMIG3E+jAodyphJ6o9ICOGkB8h4sitEdhNddbfEcsR6OFd9YMg5iFB+RGeaL109KNehDRZz5DqM4PJ18yF/0boY8+9wyVwRh3iM2BaFRcIXRU6sQsHxgdrCuVPN1k1bEIh7OWa3HiP36wPsG0RtBJTQqGRoj0flJQjfJr53Jz0uGANxonXBWZLauBKXNFjqaI8ZbePRiqXqPNlv/Ma4lfYeYzWeDsU5lJ//IZowBBbz5WVzJ2b 279797073@qq.com
+
+
+测试HTTPS端口是否可用：
+ssh -T -p 443 git@ssh.github.com
+The authenticity of host '[ssh.github.com]:443 ([192.30.252.150]:443)' can't be established.
+RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.
+Are you sure you want to continue connecting (yes/no)? y  
+Please type 'yes' or 'no': yes
+Warning: Permanently added '[ssh.github.com]:443,[192.30.252.150]:443' (RSA) to the list of known hosts.
+Enter passphrase for key '/root/.ssh/id_rsa': 
+Hi awdz424! You've successfully authenticated, but GitHub does not provide shell access.
+root@louxj:~/.ssh# gedit ~/.ssh/config
+root@louxj:~/.ssh#cat ~/.ssh/config
+Host github.com
+	Hostname ssh.github.com
+	Port 443
+
+
+root@louxj:~/.ssh# ssh -T git@github.com
+Warning: Permanently added the RSA host key for IP address '[192.30.252.148]:443' to the list of known hosts.
+Enter passphrase for key '/root/.ssh/id_rsa': 
+Hi awdz424! You've successfully authenticated, but GitHub does not provide shell access.
+
+
+
