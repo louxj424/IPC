@@ -7,18 +7,18 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#define FIFO_NAME "/home/louxj/workspace/networking/ipc/myfifo"
-#define PIPE_BUFF 12
+#define FIFO_NAME "/tmp/myfifo"
+#define FIFO_BUFF 12
 
 int main(int argc, char const *argv[])
 {
-	char buffer[PIPE_BUFF];
-	int pipe_id;
+	char buffer[FIFO_BUFF];
+	int fifo_id;
 	int size = sizeof(buffer);
 	
-	if ((pipe_id=open(FIFO_NAME,O_RDWR))!=-1)
+	if ((fifo_id=open(FIFO_NAME,O_RDWR))!=-1)
 	{
-		read(pipe_id,(void *)buffer,size);
+		read(fifo_id,(void *)buffer,size);
 		printf("%s\n",(char *)buffer);
 	}else
 	{

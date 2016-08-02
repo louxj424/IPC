@@ -8,9 +8,9 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#define MSG_FILE "/tmp"       //a pathname for generating a unique key
-#define BUFFER 512            //set the buffer size to 255 bytes
-#define PERM S_IRUSR|S_IWUSR  //allow the user to read and write
+#define MSG_FILE "/tmp"       //一个产生唯一的key的路径名
+#define BUFFER 512            //设置缓冲区大小为512字节
+#define PERM S_IRUSR|S_IWUSR  //允许用户读写
 
 struct msgbuffer
 {	
@@ -21,9 +21,9 @@ typedef struct msgbuffer msgbuf;
 
 int main(int argc, char const *argv[])
 {
-	//create a unique key
+	//创建一个唯一的key
 	key_t key;	
-	if ((key=ftok(MSG_FILE,BUFFER))==-1)
+	if ((key=ftok(MSG_FILE,BUFFER))==-1)//使用同样的参数产生一个与发送端相同的key
 	{
 	 	fprintf(stderr, "ftok:%s\n", strerror(errno));
 	 	exit(1);
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
 		printf("generate a key=%d\n", key);
 	}
 
-	//get a message queue 
+	//产生一个消息队列
 	int msgid;	
 	msgbuf msg;
 	if ((msgid=msgget(key,PERM|IPC_CREAT))==-1)
@@ -41,18 +41,24 @@ int main(int argc, char const *argv[])
 	 	exit(1);
 	}
 
-	//get a message from the queue everytime
+	//从消息队列中接收消息
 	int i;
 	for (i = 0; i < 3; ++i)
 	{
+	    //从消息队列中接收消息
+	    //extern ssize_t msgrcv (int __msqid, void *__msgp, size_t __msgsz,long int __msgtyp, int __msgflg);
+	    //TODO：判断操作的是否成功
 		msgrcv(msgid,&msg,sizeof(msgbuf),1,0);
 		printf("Receiver receive: %s\n", msg.mtext);
 	}
 
-	//send the message to notice the sender
+	//发送一条消息以提示发送者
+	//为了与发送者消息类型进行区分，这里设定自定义消息类型为2
 	msg.mtype=2;
 	char * myask="3 messages have received from you";
 	strncpy(msg.mtext,myask,BUFFER);
+	//以费阻塞的方式将消息发送出去
+	//TODO：判断操作的是否成功
 	msgsnd(msgid,&msg,sizeof(msgbuf),IPC_NOWAIT);
 
 	return 1;
