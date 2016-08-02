@@ -1,0 +1,156 @@
+OLSRd config library
+Copyright (c) 2011 the olsr.org team
+
+The OLSRd config library is a complete config parser/writer
+API with variable backend and format support.
+
+==================================
+    OLSRd config database API
+==================================
+
+(See src/config/cfg_db.c)
+The database API implements a storage for a string base configuration.
+
+It use the following scheme to store the data:
+
+* each database contains a tree of section types.
+* each section type can be a named or unnamed section type and contains
+  a tree of named sections. In case of an unnamed section type this tree
+  will only contain a single entry.
+* each named section contains a tree of entries.
+* each entry contains a key and a value or a list of values.
+
+The keys of the database (section types, section names and entry keys)
+are restricted to a scheme similar to C/C++ variable names. They must
+only contain alphanumeric characters and underscores and must not begin
+with a number (regular expression: [a-zA-Z_][a-zA-Z0-9_]*).
+
+The value is an null terminated string containing any kind of character.
+An entry can store a list of unique values.
+
+1) database management
+2) appending data to a database
+3) removing data from a database
+4) finding database objects
+5) custom entry handling
+6) helper functions/macros
+
+
+1) database management
+**********************
+
+cfg_db_add() creates a new empty database, cfg_db_remove() frees all
+resources associated with the database (including the database itself).
+
+cfg_db_duplicate() creates a new database as a copy of an existing
+one, its a combination of cfg_db_add() and cfg_db_copy().
+ 
+cfg_db_link_schema() links a configuration schema to a database to
+allow a later validation of the content (see config_schema.txt). 
+
+
+2) appending data to a database
+*******************************
+
+There are two families of API calls to append data to the database,
+cfg_db_add_* (which appends new data) and cfg_db_copy_* (which copies
+data from another database).
+
+cfg_db_add_namedsection() adds a new named section to the database,
+cfg_db_add_unnamedsection() adds an unnamed one. In both cases the
+section_type will be automatically added if it does not exist.
+
+cfg_db_add_entry() appends a value to a database entry. Both section
+and entry will be created if necessary. A NULL attribute for the name
+of the section means an unnamed section.
+
+cfg_db_copy() copies all database entries from one database to
+another one.
+cfg_db_copy_sectiontype() only copies one section type and the data
+within, cfg_db_copy_namedsection() copies only a (un)named section
+and cfg_db_copy_entry() only copies a single database entry.
+
+
+3) removing data from a database
+********************************
+
+cfg_db_remove_sectiontype() removes a section type from the
+database and all data within.
+cfg_db_remove_namedsection() removes a (un)named section and
+cfg_db_remove_entry() removes a single entry.
+
+
+4) finding database objects
+***************************
+
+There are two families of API calls to find objects in the database,
+cfg_db_find_* calls are easier to use because you can specify the whole
+path to the object (type, name, key) as strings, cfg_db_get_* calls
+are faster, but require a pointer to the parent object. All of this 
+calls return NULL if the object was not found.
+
+cfg_db_find_sectiontype() returns a specific section type from the
+database, cfg_db_find_namedsection() returns a named section, 
+cfg_db_find_unnamedsection() an unnamed one and cfg_db_find_entry()
+returns a single entry
+
+cfg_db_get_sectiontype(), cfg_db_get_named_section(),
+cfg_db_get_unnamed_section() and cfg_db_get_entry() do the same, just
+with a different parameter set as explained above.
+
+
+5) config entry handling
+************************
+
+The cfg_db_get_entry_value() API call directly returns the last value
+of a database entry. It requires section type, name and key as strings
+to make it easy to use. For unnamed section the caller has to provide
+a NULL for the name. The function returns NULL if the entry does not
+exist.
+
+This function also handles the default values of the schema, if the
+current database is linked to a schema.
+
+cfg_db_overwrite_entry() works similar than cfg_db_add_entry(), but
+removes existing values first and sets the new value afterwards.
+
+cfg_db_set_entry() combines _add_entry() and _overwrite() entry. The
+two API calls are just inline calls to this function.
+
+cfg_db_remove_element() removes a single value from a multipart value.
+If it removes the last part of the value, the value will be removed too.
+The function returns 0 if the element was removed or -1 if it did not
+exist.
+
+cfg_db_entry_get_listsize() returns the number of values of a
+configuration entry. cfg_db_is_multipart_entry() returns true if an
+entry contains multiple values.
+
+
+6) helper functions/macros
+**************************
+
+cfg_db_is_named_section() returns true if a cfg_named_section struct
+is a named section, false if it is an unnamed one.
+
+All of the following macros are remove-safe, which means you are allowed
+to remove the current (and only the current!) object in the body of
+the loop.
+
+CFG_FOR_ALL_SECTION_TYPES(db, s_type, iterator) is an iterator
+macro for the section types of a database. It requires a pointer
+to the database, the loop variable and a helper pointer (the last two
+with the type cfg_section_type).
+
+CFG_FOR_ALL_SECTION_NAMES(s_type, s_name, iterator) iterates over
+the sections of a section type. It requires a pointer to the section type
+and loop variable/helper (both type cfg_named_section).
+
+CFG_FOR_ALL_ENTRIES(s_name, entry, iterator) iterates over
+the entries of a section. It requires a pointer to the section
+and loop variable/helper (both type cfg_entry).
+
+CFG_FOR_ALL_STRINGS(entry, charptr) is an iterator macro that
+loops over the values of a configuration entry array. It only
+requires a pointer to the entries array and a loop variable
+(a char pointer).
